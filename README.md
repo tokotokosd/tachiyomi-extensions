@@ -7,7 +7,7 @@ Personal repository for custom Tachiyomi/Tachimanga extensions.
 Add this repository to Tachimanga:
 
 ```
-https://tokotokosd.github.io/tachiyomi-extensions
+https://tokotokosd.github.io/tachiyomi-extensions/repo/index.min.json
 ```
 
 ### Steps:
@@ -19,7 +19,7 @@ https://tokotokosd.github.io/tachiyomi-extensions
 5. Tap **+** to add repository
 6. Enter:
    - Name: `My Extensions`
-   - Base URL: `https://tokotokosd.github.io/tachiyomi-extensions`
+   - Base URL: `https://tokotokosd.github.io/tachiyomi-extensions/repo/index.min.json`
 7. Save and refresh
 
 ## Available Extensions
