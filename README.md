@@ -8,8 +8,12 @@ source and the published repo that GitHub Pages serves.
 In Tachimanga: **More → Extensions → Extension repositories → +**, then enter
 
 ```
-https://tokotokosd.github.io/tachiyomi-extensions/repo/index.min.json
+https://raw.githubusercontent.com/tokotokosd/tachiyomi-extensions/main/repo/index.min.json
 ```
+
+Use this raw.githubusercontent.com address. Tachimanga rejects the
+`tokotokosd.github.io` address before downloading anything, even though the
+same files are served there.
 
 Enable the **русский** language in the extension list's language filter to see ReManga.
 
