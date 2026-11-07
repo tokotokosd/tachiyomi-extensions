@@ -1,47 +1,54 @@
-# My Tachiyomi Extensions
+# tokotokosd extensions
 
-Personal repository for custom Tachiyomi/Tachimanga extensions.
+Personal Tachiyomi/Tachimanga extension repository. It holds the extension
+source and the published repo that GitHub Pages serves.
 
-## Installation
+## Add the repo
 
-Add this repository to Tachimanga:
+In Tachimanga: **More → Extensions → Extension repositories → +**, then enter
 
 ```
 https://tokotokosd.github.io/tachiyomi-extensions/repo/index.min.json
 ```
 
-### Steps:
+Enable the **русский** language in the extension list's language filter to see ReManga.
 
-1. Open **Tachimanga** app
-2. Go to **Browse** → **Extensions**
-3. Tap **⋮** (three dots, top right)
-4. Select **Extension repos**
-5. Tap **+** to add repository
-6. Enter:
-   - Name: `My Extensions`
-   - Base URL: `https://tokotokosd.github.io/tachiyomi-extensions/repo/index.min.json`
-7. Save and refresh
+## ReManga
 
-## Available Extensions
+Source for [remanga.org](https://remanga.org) (Russian), built against
+extensions-lib 1.4 (the version Tachimanga runs).
 
-### ReManga (v1.4.6)
-- **Language:** Russian
-- **Source:** https://remanga.org
-- **Features:**
-  - Browse popular and latest manga
-  - Search with filters
-  - Read all chapters (with pagination)
-  - Clean descriptions (HTML stripped)
-  - Licensed manga detection
+- Popular, latest, text search, and search by pasted `remanga.org/manga/...` link or `slug:<dir>`
+- Filters: sort (with direction), type, status, age rating, minimum chapters, genres and categories (include/exclude)
+- All translations: each chapter carries its team name, so the app's scanlator filter can pick one. A setting limits it to the main translation.
+- Paid chapters are marked 🔒 (or hidden via a setting). Bought chapters open after logging in through WebView, or with a token pasted into the settings.
+- Image servers fall back to the reserve host when the primary fails.
 
-## Updating Extensions
+## Layout
 
-Extensions will automatically check for updates. When a new version is available, you'll see an update button in the Extensions list.
+| Path | What |
+|---|---|
+| `src/ru/remanga/` | Extension source, unit tests (`test/`) and API fixtures (`test-resources/`) |
+| `core/`, `buildSrc/`, `gradle/`, `common.gradle`, `*.gradle.kts` | Build setup taken from keiyoushi/extensions-source at `8f70beda0` (before its lib 1.6 rewrite) |
+| `repo/` | Published repo: `index.min.json`, `repo.json`, `apk/`, `icon/` |
+| `scripts/release.sh` | Test, build, check signature, publish into `repo/` |
+| `scripts/update_index.py` | Copies an APK into `repo/apk/` and rewrites the index |
+| `.github/workflows/release.yml` | CI: tests on every push; publishes when the version code goes up |
 
-## Building From Source
+## Releasing an update
 
-See the [source code](https://github.com/tokotokosd/tachiyomi-extensions) for build instructions.
+1. Change the code and bump `extVersionCode` in `src/ru/remanga/build.gradle`.
+2. Either push to `main` and let GitHub Actions build, sign and publish, or run locally:
 
-## Support
+   ```bash
+   scripts/release.sh --push
+   ```
 
-For issues or questions, please open an issue on GitHub.
+Local builds need JDK 17 and the Android SDK (`brew install openjdk@17` and
+`brew install --cask android-commandlinetools`, then install `platforms;android-34`
+and `build-tools;34.0.0`), plus `signingkey.jks` and `signing.env` in the repo root.
+Both files are gitignored. CI reads the same values from the repository secrets
+`SIGNING_KEY` (base64 of the keystore), `KEY_STORE_PASSWORD`, `ALIAS` and `KEY_PASSWORD`.
+
+The APK must always be signed with the same key (SHA-256 `4a16e59b…`); `release.sh`
+refuses to publish anything else, because installed copies would reject the update.

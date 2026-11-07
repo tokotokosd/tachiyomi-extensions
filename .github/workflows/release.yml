@@ -1,0 +1,65 @@
+name: Build and publish
+
+# Pull requests and pushes run the tests. A push to main that raises
+# extVersionCode above the published code also signs the APK and commits it
+# into repo/, which GitHub Pages serves.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['repo/**', '**.md']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Decide whether to publish
+        id: check
+        run: |
+          code=$(sed -n 's/.*extVersionCode *= *\([0-9]*\).*/\1/p' src/ru/remanga/build.gradle)
+          published=$(python3 -c "import json;print(next((e['code'] for e in json.load(open('repo/index.min.json')) if e['pkg'].endswith('.ru.remanga')),0))")
+          echo "code=$code published=$published"
+          if [[ "${{ github.event_name }}" != "pull_request" && "${{ github.ref }}" == "refs/heads/main" && "$code" -gt "$published" ]]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Unit tests
+        if: steps.check.outputs.publish != 'true'
+        run: ./gradlew --no-daemon :src:ru:remanga:testReleaseUnitTest
+
+      - name: Build, sign and publish
+        if: steps.check.outputs.publish == 'true'
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          ALIAS: ${{ secrets.ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          echo "$SIGNING_KEY" | base64 -d > signingkey.jks
+          scripts/release.sh
+          rm -f signingkey.jks
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add repo
+          git commit -m "Publish ReManga $(python3 -c "import json;print(next(e['version'] for e in json.load(open('repo/index.min.json')) if e['pkg'].endswith('.ru.remanga')))")"
+          git push

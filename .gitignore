@@ -1,3 +1,16 @@
 .DS_Store
 *.tmp
 *.log
+
+# Gradle / Android build output
+.gradle/
+.kotlin/
+build/
+/local.properties
+.idea/
+*.iml
+
+# Signing material never goes to git
+*.jks
+*.keystore
+signing.env

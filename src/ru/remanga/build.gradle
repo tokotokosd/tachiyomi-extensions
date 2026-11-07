@@ -1,0 +1,25 @@
+ext {
+    extName = 'ReManga'
+    extClass = '.ReManga'
+    extVersionCode = 7
+}
+
+apply from: "$rootDir/common.gradle"
+
+// JVM unit tests for the JSON models and pure helpers (fixtures in test-resources/).
+android {
+    sourceSets {
+        test {
+            java.srcDirs = ['test']
+            resources.srcDirs = ['test-resources']
+        }
+    }
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+}
+
+dependencies {
+    testImplementation(libs.bundles.common)
+    testImplementation 'junit:junit:4.13.2'
+}
